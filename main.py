@@ -8,6 +8,15 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 
+from PIL import Image
+#from PIL.ImageQt import ImageQt
+from PIL import ImageFilter
+from PIL.ImageFilter import (
+    BLUR, CONTOUR, DETAIL, EDGE_ENHANCE, EDGE_ENHANCE_MORE,
+    EMBOSS, FIND_EDGES, SMOOTH, SMOOTH_MORE, SHARPEN,
+    GaussianBlur, UnsharpMask
+)
+
 
 app = QApplication([])
 win = QWidget()
@@ -20,7 +29,7 @@ lw_files = QListWidget()
 
 btn_left = QPushButton("Вліво")
 btn_right = QPushButton("Вправо")
-btn_miror = QPushButton("Відзеркалити")
+btn_flip = QPushButton("Відзеркалити")
 btn_sharp = QPushButton("Різкість")
 btn_bw = QPushButton("Ч/Б")
 
@@ -35,7 +44,7 @@ col2.addWidget(lb_image, 95)
 row_tools = QHBoxLayout()
 row_tools.addWidget(btn_left)
 row_tools.addWidget(btn_right)
-row_tools.addWidget(btn_miror)
+row_tools.addWidget(btn_flip)
 row_tools.addWidget(btn_sharp)
 row_tools.addWidget(btn_bw)
 col2.addLayout(row_tools)
@@ -89,6 +98,30 @@ class ImageProcessor():
         lb_image.setPixmap(pixmapimage)
         lb_image.show()
 
+    def  do_left(self):
+        self.image =self.image.transpose(Image.ROTATE_90)
+        self.saveImage()
+        image_path = os.path.join(workdir, self.save_dir, self.filename)
+        self.showImage(image_path)
+
+    def do_right(self):
+        self.image =self.image.transpose(Image.ROTATE_270)
+        self.saveImage()
+        image_path = os.path.join(workdir, self.save_dir, self.filename)
+        self.showImage(image_path)
+
+    def do_filp(self):
+        self.image = self.image.transpose(Image.FLIP_LEFT_RIGHT)
+        self.saveImage()
+        image_path = os.path.join(workdir,self.save_dir, self.filename)
+        self.showImage(image_path)
+    def do_sharpen(self):
+        self.image = self.image.filter(SHARPEN)
+        self.saveImage()
+        image_path = os.path.join(workdir,self.save_dir, self.filename)
+        self.showImage(image_path)
+
+
     def do_bw(self):
         self.image = self.image.convert("L")
         self.saveImage()
@@ -102,6 +135,7 @@ class ImageProcessor():
         image_path = os.path.join(path, self.filename)
         self.image.save(image_path)
 
+
 def showChosenImage():
     if lw_files.currentRow() >= 0:
         filename = lw_files.currentItem().text()
@@ -111,11 +145,13 @@ def showChosenImage():
 
 
 
-lw_files.currentRowChanged.connect(showChosenImage)
+
 
 workimage = ImageProcessor()
 lw_files.currentRowChanged.connect(showChosenImage)
 btn_bw.clicked.connect(workimage.do_bw)
-
-
+btn_left.clicked.connect(workimage.do_left)
+btn_right.clicked.connect(workimage.do_right)
+btn_sharp.clicked.connect(workimage.do_sharpen)
+btn_flip.clicked.connect(workimage.do_filp)
 app.exec()
